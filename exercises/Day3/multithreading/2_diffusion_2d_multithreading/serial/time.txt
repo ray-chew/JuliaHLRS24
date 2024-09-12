@@ -1,0 +1,5 @@
+Serial:
+Time = 7.5345e-01 s, T_eff = 0.14 GB/s 
+
+
+

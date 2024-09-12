@@ -35,7 +35,7 @@ function diffusion_step!(params, C2, C)
     return nothing
 end
 
-function run_diffusion(; ns=128, nt=ns^2÷40, do_visualize=false, parallel_init=false, static=false)
+function run_diffusion(; ns=128, nt=ns^2÷40, do_visualize=false, parallel_init=false, static=true)
     params   = init_params(; ns, nt, do_visualize, parallel_init, static)
     C, C2    = init_arrays_threads(params)
     maybe_visualize(params, C)

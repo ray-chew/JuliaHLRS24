@@ -1,3 +1,5 @@
+# %%
+
 # 2D linear diffusion solver - serial, loop version
 using Printf
 using Plots
@@ -8,7 +10,7 @@ macro qx(ix, iy) esc(:(-D * (C[$ix+1, $iy] - C[$ix, $iy]) * inv(dx))) end
 macro qy(ix, iy) esc(:(-D * (C[$ix, $iy+1] - C[$ix, $iy]) * inv(dy))) end
 
 function diffusion_step!(params, C2, C)
-    (; ds, dt, D) = params
+    (; cs, dt, D, dx, dy) = params
     # respect column major order
     for iy in 1:size(C, 2)-2
         for ix in 1:size(C, 1)-2
