@@ -55,7 +55,7 @@ function main()
         #
         # TODO: compute local pi estimate
         #
-        # local_pi = ...
+        local_pi = compute_pi(N_local)
 
         #
         # TODO: Use MPI.Reduce to sum up all rank-local π estimates.
@@ -63,7 +63,11 @@ function main()
         #       On rank 0, divide the result by nranks (to compute the average π estimate).
         #       The final result should be stored in the variable: pi_approx
         #
-        # pi_approx = ...
+        pi_approx = MPI.Reduce(local_pi, +, comm)
+
+        if rank == 0
+            pi_approx /= nranks
+        end
 
         MPI.Barrier(comm)
         times[i] = MPI.Wtime() - times[i] # timing stop

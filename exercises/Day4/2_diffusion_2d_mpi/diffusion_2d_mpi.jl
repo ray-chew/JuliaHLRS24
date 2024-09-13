@@ -40,11 +40,11 @@ function update_halo!(A, bufs, neighbors, comm)
     (neighbors.right != MPI.PROC_NULL) && copyto!(bufs.send_right, @view(A[:, end-1]))
 
     reqs = MPI.MultiRequest(4)
-    (neighbors.left  != MPI.PROC_NULL) && # TODO: receive from left neighbor into bufs.recv_left
-    (neighbors.right != MPI.PROC_NULL) && # TODO: receive from right neighbor into bufs.recv_right
+    (neighbors.left  != MPI.PROC_NULL) && MPI.Irecv!(bufs.recv_left, comm,  reqs[1], source=neighbors.left )# TODO: receive from left neighbor into bufs.recv_left
+    (neighbors.right != MPI.PROC_NULL) && MPI.Irecv!(bufs.recv_right, comm, reqs[2], source=neighbors.right)# TODO: receive from right neighbor into bufs.recv_right
 
-    (neighbors.left  != MPI.PROC_NULL) && # TODO: send bufs.send_left to left neighbor
-    (neighbors.right != MPI.PROC_NULL) && # TODO: send bufs.send_right to right neighbor
+    (neighbors.left  != MPI.PROC_NULL) && MPI.Isend(bufs.send_left,  comm, reqs[3], dest=neighbors.left )# TODO: send bufs.send_left to left neighbor
+    (neighbors.right != MPI.PROC_NULL) && MPI.Isend(bufs.send_right, comm, reqs[4], dest=neighbors.right)# TODO: send bufs.send_right to right neighbor
     MPI.Waitall(reqs) # blocking
 
     (neighbors.left  != MPI.PROC_NULL) && copyto!(@view(A[:, 1  ]), bufs.recv_left)
@@ -55,11 +55,11 @@ function update_halo!(A, bufs, neighbors, comm)
     (neighbors.bottom != MPI.PROC_NULL) && copyto!(bufs.send_bottom, @view(A[end-1, :]))
 
     reqs = MPI.MultiRequest(4)
-    (neighbors.top    != MPI.PROC_NULL) && # TODO: receive from top neighbor into bufs.recv_top
-    (neighbors.bottom != MPI.PROC_NULL) && # TODO: receive from bottom neighbor into bufs.recv_bottom
+    (neighbors.top    != MPI.PROC_NULL) && MPI.Irecv!(bufs.recv_top, comm,  reqs[1], source=neighbors.top )# TODO: receive from top neighbor into bufs.recv_top
+    (neighbors.bottom != MPI.PROC_NULL) && MPI.Irecv!(bufs.recv_bottom, comm,  reqs[2], source=neighbors.bottom )# TODO: receive from bottom neighbor into bufs.recv_bottom
 
-    (neighbors.top    != MPI.PROC_NULL) && # TODO: send bufs.send_top to top neighbor
-    (neighbors.bottom != MPI.PROC_NULL) && # TODO: send bufs.send_bottom to bottom neighbor
+    (neighbors.top    != MPI.PROC_NULL) && MPI.Isend(bufs.send_top, comm,  reqs[3], dest=neighbors.top )# TODO: send bufs.send_top to top neighbor
+    (neighbors.bottom != MPI.PROC_NULL) && MPI.Isend(bufs.send_bottom, comm,  reqs[4], dest=neighbors.bottom )# TODO: send bufs.send_bottom to bottom neighbor
     MPI.Waitall(reqs) # blocking
 
     (neighbors.top    != MPI.PROC_NULL) && copyto!(@view(A[1  , :]), bufs.recv_top)
@@ -114,7 +114,7 @@ end
 
 # Running things...
 
-# enable save to disk by default
+# enable save to disk by defaultinit_bufs
 (!@isdefined do_save) && (do_save = true)
 # enable execution by default
 (!@isdefined do_run) && (do_run = true)

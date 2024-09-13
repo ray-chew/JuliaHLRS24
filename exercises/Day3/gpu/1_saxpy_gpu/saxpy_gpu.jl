@@ -12,6 +12,7 @@ function saxpy_broadcast_gpu!(a, x, y)
     #         run the kernel on the GPU, don't forget to synchronize!
     #
     # --------
+    return CUDA.@sync a .* x .+ y
 end
 
 "CUDA kernel for computing SAXPY on the GPU"
@@ -23,6 +24,9 @@ function _saxpy_kernel!(a, x, y)
     #         the global index `i` is within the bounds of `y` (and `x`).
     #
     # --------
+    if i <= length(x)
+        @inbounds x[i] = a * x[i] + y[i]
+    end
     return nothing
 end
 
@@ -35,6 +39,7 @@ function saxpy_cuda_kernel!(a, x, y; nthreads, nblocks)
     #         Don't forget to synchronize :)
     #
     # --------
+    CUDA.@sync @cuda threads=1024 blocks=2 cuda_kernel_blocks!(a, x, y)
 end
 
 "Computes SAXPY using the CUBLAS function `CUBLAS.axpy!` provided by NVIDIA"
@@ -67,7 +72,7 @@ function main()
     choose_correct_gpu()
     dtype = Float32
     nthreads = 1024 # CUDA.DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK
-    nblocks = 2^19
+    nblocks = 1024
     len = nthreads * nblocks # vector length
     a = convert(dtype, 3.1415)
     xgpu = CUDA.ones(dtype, len)
